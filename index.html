@@ -582,20 +582,38 @@ body {
 #page-aim.aim-immersive .card > .tip { display: none; }
 #page-aim.aim-immersive .form-row {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 14px;
+  left: 16px;
   z-index: 20;
-  align-items: center;
-  gap: 16px;
-  padding: 14px 200px 12px 24px;
-  background: linear-gradient(rgba(15,25,35,.95), rgba(15,25,35,.7) 75%, transparent);
+  flex-wrap: nowrap;
+  gap: 10px;
+  margin: 0;
+  padding: 8px 12px;
+  background: rgba(11,29,48,.82);
+  border: 1px solid rgba(148,197,233,.28);
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.4);
+  backdrop-filter: blur(6px);
 }
-#page-aim.aim-immersive .form-group { margin-bottom: 0; }
+#page-aim.aim-immersive .form-group {
+  flex: 0 0 auto;
+  min-width: auto;
+  margin-bottom: 0;
+}
 #page-aim.aim-immersive .form-group label {
   font-size: 10px;
   letter-spacing: 1px;
   opacity: .7;
+  margin-bottom: 2px;
+}
+#page-aim.aim-immersive .form-group input,
+#page-aim.aim-immersive .form-group select {
+  width: 76px;
+  padding: 5px 8px;
+  font-size: 13px;
+  background: rgba(15,42,68,.9);
+  border-color: rgba(148,197,233,.3);
+  color: #E6F2FB;
 }
 #page-aim.aim-immersive .aim-area {
   height: 100vh !important;
@@ -616,15 +634,19 @@ body {
 }
 #page-aim.aim-immersive .aim-stats {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 20;
   justify-content: center;
-  gap: 44px;
+  gap: 24px;
   margin: 0;
-  padding: 12px 0 16px;
-  background: linear-gradient(transparent, rgba(15,25,35,.95) 45%);
+  padding: 8px 22px;
+  background: rgba(11,29,48,.82);
+  border: 1px solid rgba(148,197,233,.28);
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.4);
+  backdrop-filter: blur(6px);
 }
 #page-aim.aim-immersive .aim-stat .num {
   font-size: 28px;
@@ -784,7 +806,7 @@ body {
     <div class="aim-area" id="aim-area">
       <div class="aim-overlay" id="aim-overlay">
         <h3>🎯 准备好了吗？</h3>
-        <p>点击"开始"后，蓝色靶子会随机出现。<br>尽量又快又准地点击每个靶子。<br>系统会记录你的过瞄/欠瞄趋势。</p>
+        <p>点击"开始"后，蓝色靶子会随机出现在屏幕任意位置。<br>尽量又快又准地点击每个靶子。<br>系统会记录你的过瞄/欠瞄趋势。</p>
         <button class="btn btn-primary" onclick="startAimTest()">开始测试</button>
       </div>
     </div>
@@ -1091,13 +1113,24 @@ function spawnTarget() {
 
   const rect = area.getBoundingClientRect();
   const size = 14;
-  const padding = 4;  // 几乎贴边，靶子铺满整个区域
-  // 沉浸式全屏时避开顶部参数栏和底部计分板，保证靶子永远可点
-  const immersive = area.closest('.page').classList.contains('aim-immersive');
-  const padTop = immersive ? 92 : padding;
-  const padBottom = immersive ? 76 : padding;
-  const x = padding + Math.random() * (rect.width - size - padding * 2);
-  const y = padTop + Math.random() * (rect.height - size - padTop - padBottom);
+  const padding = 4;  // 几乎贴边，靶子铺满整个区域（包括顶部和底部）
+  // 收集悬浮小徽章（左上参数栏、底部计分板、右上退出按钮）作为障碍物
+  const obstacles = [];
+  for (const el of area.parentElement.parentElement.querySelectorAll('.form-row, .aim-stats, .aim-exit')) {
+    if (getComputedStyle(el).display === 'none') continue;  // 隐藏的元素跳过
+    const b = el.getBoundingClientRect();
+    if (b.width === 0 || b.height === 0) continue;
+    obstacles.push({ x: b.left - rect.left - 8, y: b.top - rect.top - 8, w: b.width + 16, h: b.height + 16 });
+  }
+  // 在整个区域内随机取点，若压在徽章上则重新抽取
+  let x = 0, y = 0;
+  for (let tries = 0; tries < 40; tries++) {
+    x = padding + Math.random() * (rect.width - size - padding * 2);
+    y = padding + Math.random() * (rect.height - size - padding * 2);
+    const onObstacle = obstacles.some(o =>
+      x < o.x + o.w && x + size > o.x && y < o.y + o.h && y + size > o.y);
+    if (!onObstacle) break;  // 这个位置不压徽章，采用
+  }
 
   const target = document.createElement('div');
   target.className = 'aim-target';
