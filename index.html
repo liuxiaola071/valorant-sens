@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>无畏契约灵敏度助手</title>
+<style>
+/* ===== 瓦罗兰特风格变量 ===== */
+:root {
+  --val-red: #FF4655;
+  --val-dark: #0F1923;
+  --val-card: #1A2733;
+  --val-border: #2A3A47;
+  --val-text: #ECE8E1;
+  --val-dim: #8B9BAB;
+  --val-green: #00C853;
+  --val-yellow: #FFD600;
+  --val-blue: #00B0FF;
+  --radius: 4px;
+  --font: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--val-dark);
+  color: var(--val-text);
+  font-family: var(--font);
+  min-height: 100vh;
+}
+
+/* ===== 顶栏 ===== */
+.header {
+  background: var(--val-red);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 12px) 100%, 0 100%);
+}
+.header h1 {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.header .badge {
+  background: rgba(0,0,0,.25);
+  padding: 2px 10px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ===== 页签导航 ===== */
+.tabs {
+  display: flex;
+  gap: 0;
+  background: var(--val-card);
+  border-bottom: 2px solid var(--val-border);
+}
+.tab {
+  padding: 14px 28px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--val-dim);
+  border-bottom: 3px solid transparent;
+  transition: all .2s;
+  user-select: none;
+  position: relative;
+}
+.tab:hover { color: var(--val-text); }
+.tab.active {
+  color: var(--val-text);
+  border-bottom-color: var(--val-red);
+}
+.tab .icon { margin-right: 6px; }
+
+/* ===== 页面区域 ===== */
+.page { display: none; padding: 24px; max-width: 900px; margin: 0 auto; }
+.page.active { display: block; }
+
+/* ===== 卡片 ===== */
+.card {
+  background: var(--val-card);
+  border: 1px solid var(--val-border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.card h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--val-red);
+  letter-spacing: 1px;
+}
+.card h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 14px 0 8px;
+  color: var(--val-dim);
+}
+
+/* ===== 表单 ===== */
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.form-group {
+  flex: 1;
+  min-width: 160px;
+}
+.form-group label {
+  display: block;
+  font-size: 13px;
+  color: var(--val-dim);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--val-dark);
+  border: 1px solid var(--val-border);
+  border-radius: var(--radius);
+  color: var(--val-text);
+  font-size: 16px;
+  font-family: var(--font);
+  outline: none;
+  transition: border-color .2s;
+}
+.form-group input:focus, .form-group select:focus {
+  border-color: var(--val-red);
+}
+.form-group input::placeholder { color: #4A5A67; }
+
+/* ===== 按钮 ===== */
+.btn {
+  padding: 12px 32px;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all .2s;
+  letter-spacing: 1px;
+}
+.btn-primary {
+  background: var(--val-red);
+  color: #fff;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+}
+.btn-primary:hover { background: #E03A48; }
+.btn-secondary {
+  background: var(--val-border);
+  color: var(--val-text);
+}
+.btn-secondary:hover { background: #3A4A57; }
+.btn-sm { padding: 8px 20px; font-size: 13px; }
+
+/* ===== 结果展示 ===== */
+.result-box {
+  background: var(--val-dark);
+  border: 1px solid var(--val-border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-top: 16px;
+  display: none;
+}
+.result-box.show { display: block; }
+
+.edpi-value {
+  font-size: 48px;
+  font-weight: 800;
+  text-align: center;
+  margin: 12px 0;
+  letter-spacing: 2px;
+}
+.edpi-label {
+  text-align: center;
+  font-size: 14px;
+  color: var(--val-dim);
+  margin-bottom: 8px;
+}
+
+/* eDPI 评估条 */
+.edpi-bar {
+  height: 8px;
+  background: linear-gradient(to right,
+    var(--val-blue) 0%, var(--val-blue) 15%,
+    var(--val-green) 15%, var(--val-green) 45%,
+    var(--val-yellow) 45%, var(--val-yellow) 70%,
+    var(--val-red) 70%, var(--val-red) 100%
+  );
+  border-radius: 4px;
+  margin: 16px 0 8px;
+  position: relative;
+}
+.edpi-marker {
+  position: absolute;
+  top: -6px;
+  width: 4px;
+  height: 20px;
+  background: #fff;
+  border-radius: 2px;
+  box-shadow: 0 0 6px rgba(255,255,255,.6);
+  transition: left .3s;
+}
+.edpi-zones {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--val-dim);
+  margin-bottom: 16px;
+}
+
+/* 评估标签 */
+.verdict {
+  text-align: center;
+  padding: 12px;
+  border-radius: var(--radius);
+  font-weight: 700;
+  font-size: 15px;
+  margin-top: 12px;
+}
+.verdict.low  { background: rgba(0,176,255,.15); color: var(--val-blue); border: 1px solid var(--val-blue); }
+.verdict.good { background: rgba(0,200,83,.15); color: var(--val-green); border: 1px solid var(--val-green); }
+.verdict.mid  { background: rgba(255,214,0,.15); color: var(--val-yellow); border: 1px solid var(--val-yellow); }
+.verdict.high { background: rgba(255,70,85,.15); color: var(--val-red); border: 1px solid var(--val-red); }
+
+/* 建议列表 */
+.suggestion-list {
+  margin-top: 12px;
+  padding: 0;
+  list-style: none;
+}
+.suggestion-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--val-border);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.suggestion-list li:last-child { border-bottom: none; }
+.suggestion-list .key {
+  color: var(--val-red);
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+/* cm/360 显示 */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.info-item {
+  background: var(--val-card);
+  border: 1px solid var(--val-border);
+  border-radius: var(--radius);
+  padding: 14px;
+  text-align: center;
+}
+.info-item .value {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--val-red);
+}
+.info-item .label {
+  font-size: 12px;
+  color: var(--val-dim);
+  margin-top: 4px;
+}
+
+/* ===== 瞄准测试 ===== */
+.aim-area {
+  position: relative;
+  width: 100%;
+  height: 480px;
+  background: var(--val-dark);
+  border: 2px solid var(--val-border);
+  border-radius: var(--radius);
+  cursor: crosshair;
+  overflow: hidden;
+  user-select: none;
+}
+.aim-target {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, var(--val-red) 50%, rgba(255,70,85,.3) 100%);
+  border: none;
+  box-shadow: 0 0 10px rgba(255,70,85,.6), 0 0 20px rgba(255,70,85,.3);
+  cursor: crosshair;
+  transition: transform .1s;
+}
+.aim-target:hover { transform: scale(1.3); }
+.aim-target.hit {
+  transform: scale(0);
+  transition: transform .15s;
+  background: var(--val-green);
+  box-shadow: 0 0 12px rgba(85,255,155,.8);
+}
+
+.aim-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15,25,35,.9);
+  z-index: 10;
+}
+.aim-overlay h3 { font-size: 20px; margin-bottom: 12px; color: var(--val-text); }
+.aim-overlay p { color: var(--val-dim); margin-bottom: 20px; text-align: center; max-width: 400px; }
+
+.aim-stats {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.aim-stat {
+  text-align: center;
+}
+.aim-stat .num {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--val-red);
+}
+.aim-stat .lbl { font-size: 12px; color: var(--val-dim); }
+
+/* 测试结果 */
+.aim-result {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--val-border);
+  background: var(--val-card);
+  display: none;
+}
+.aim-result.show { display: block; }
+.aim-result h4 { color: var(--val-red); margin-bottom: 8px; }
+
+/* 过瞄/欠瞄指示 */
+.overshoot-bar {
+  height: 6px;
+  background: linear-gradient(to right, var(--val-blue), var(--val-green), var(--val-red));
+  border-radius: 3px;
+  margin: 8px 0;
+  position: relative;
+}
+.overshoot-marker {
+  position: absolute;
+  top: -4px;
+  width: 3px;
+  height: 14px;
+  background: #fff;
+  border-radius: 2px;
+}
+
+/* ===== 换算表 ===== */
+.convert-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+.convert-table th, .convert-table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--val-border);
+}
+.convert-table th {
+  color: var(--val-dim);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.convert-table td { font-size: 15px; }
+.convert-table .game-name { font-weight: 700; }
+.convert-table .formula {
+  font-size: 12px;
+  color: var(--val-dim);
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+}
+
+/* 换算输入 */
+.convert-input-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.convert-input-row .form-group { flex: 1; min-width: 140px; }
+.convert-input-row .btn { margin-bottom: 0; }
+.convert-result {
+  margin-top: 20px;
+  padding: 20px;
+  background: var(--val-dark);
+  border: 1px solid var(--val-green);
+  border-radius: var(--radius);
+  display: none;
+}
+.convert-result.show { display: block; }
+.convert-result .big {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--val-green);
+  text-align: center;
+}
+.convert-result .note {
+  text-align: center;
+  font-size: 13px;
+  color: var(--val-dim);
+  margin-top: 8px;
+}
+
+/* 页脚 */
+.footer {
+  text-align: center;
+  padding: 24px;
+  color: var(--val-dim);
+  font-size: 12px;
+}
+
+/* 提示 */
+.tip {
+  background: rgba(0,176,255,.1);
+  border: 1px solid rgba(0,176,255,.3);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+.tip strong { color: var(--val-blue); }
+
+/* 响应式 */
+@media (max-width: 600px) {
+  .page { padding: 12px; }
+  .card { padding: 16px; }
+  .form-row { flex-direction: column; }
+  .aim-area { height: 320px; }
+  .tabs { overflow-x: auto; }
+  .tab { padding: 12px 16px; font-size: 13px; white-space: nowrap; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 顶栏 ===== -->
+<div class="header">
+  <h1>🎯 灵敏度助手</h1>
+  <span class="badge">VALORANT</span>
+</div>
+
+<!-- ===== 页签 ===== -->
+<div class="tabs">
+  <div class="tab active" data-page="edpi"><span class="icon">🧮</span>eDPI 计算器</div>
+  <div class="tab" data-page="aim"><span class="icon">🔫</span>瞄准测试</div>
+  <div class="tab" data-page="convert"><span class="icon">🔄</span>跨游戏换算</div>
+</div>
+
+<!-- ==================== 页面1: eDPI 计算器 ==================== -->
+<div class="page active" id="page-edpi">
+  <div class="card">
+    <h2>🧮 eDPI 计算器</h2>
+    <div class="tip">
+      <strong>什么是 eDPI？</strong> eDPI = 鼠标DPI × 游戏内灵敏度。不同 DPI 的玩家可以用 eDPI 公平对比。
+      无畏契约职业选手平均 eDPI 在 <strong>200~400</strong> 之间。
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>鼠标 DPI</label>
+        <input type="number" id="input-dpi" placeholder="例如 800" min="100" max="25600" value="800">
+      </div>
+      <div class="form-group">
+        <label>游戏内灵敏度</label>
+        <input type="number" id="input-sens" placeholder="例如 0.35" min="0.01" max="10" step="0.01" value="0.35">
+      </div>
+      <div class="form-group" style="flex:0; min-width:auto; display:flex; align-items:flex-end;">
+        <button class="btn btn-primary" onclick="calcEDPI()">计算</button>
+      </div>
+    </div>
+
+    <!-- 结果 -->
+    <div class="result-box" id="edpi-result">
+      <div class="edpi-label">你的 eDPI</div>
+      <div class="edpi-value" id="edpi-number">—</div>
+
+      <!-- eDPI 评估条 -->
+      <div class="edpi-bar">
+        <div class="edpi-marker" id="edpi-marker" style="left:50%"></div>
+      </div>
+      <div class="edpi-zones">
+        <span>极慢 (&lt;150)</span>
+        <span>偏低 (150~200)</span>
+        <span>合理 (200~400)</span>
+        <span>偏高 (400~600)</span>
+        <span>极快 (&gt;600)</span>
+      </div>
+
+      <!-- 评估标签 -->
+      <div class="verdict" id="edpi-verdict"></div>
+
+      <!-- 详细信息 -->
+      <div class="info-grid" id="edpi-info"></div>
+
+      <!-- 建议 -->
+      <h3 style="margin-top:20px;">📋 调整建议</h3>
+      <ul class="suggestion-list" id="edpi-suggestions"></ul>
+    </div>
+  </div>
+
+  <!-- 常见 DPI 参考 -->
+  <div class="card">
+    <h2>📊 常见 eDPI 参考</h2>
+    <table class="convert-table">
+      <thead>
+        <tr><th>类型</th><th>eDPI 范围</th><th>特点</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="game-name">🐌 极低灵敏度</td><td>&lt; 150</td><td>大幅甩臂转身，精准微调，需要大鼠标垫</td></tr>
+        <tr><td class="game-name">🎯 低灵敏度</td><td>150 ~ 250</td><td>职业哥主流区间，精准优先</td></tr>
+        <tr><td class="game-name">⚖️ 中等灵敏度</td><td>250 ~ 400</td><td>均衡型，适合大多数玩家</td></tr>
+        <tr><td class="game-name">🏃 高灵敏度</td><td>400 ~ 600</td><td>手腕流，反应快但微调难</td></tr>
+        <tr><td class="game-name">🚀 极高灵敏度</td><td>&gt; 600</td><td>仅适合极小鼠标垫或特殊习惯</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== 页面2: 瞄准测试 ==================== -->
+<div class="page" id="page-aim">
+  <div class="card">
+    <h2>🔫 瞄准测试</h2>
+    <div class="tip">
+      <strong>怎么测？</strong> 点击"开始测试"，靶子会随机出现在不同位置，用鼠标快速点击。
+      系统会分析你的过瞄/欠瞄程度，反推出建议的灵敏度调整方向。
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>鼠标 DPI</label>
+        <input type="number" id="aim-dpi" placeholder="例如 800" min="100" max="25600" value="800">
+      </div>
+      <div class="form-group">
+        <label>当前游戏内灵敏度</label>
+        <input type="number" id="aim-sens" placeholder="例如 0.35" min="0.01" max="10" step="0.01" value="0.35">
+      </div>
+      <div class="form-group">
+        <label>目标数量</label>
+        <select id="aim-count">
+          <option value="10">10 个</option>
+          <option value="20" selected>20 个</option>
+          <option value="30">30 个</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 打靶区 -->
+    <div class="aim-area" id="aim-area">
+      <div class="aim-overlay" id="aim-overlay">
+        <h3>🎯 准备好了吗？</h3>
+        <p>点击"开始"后，红色靶子会随机出现。<br>尽量又快又准地点击每个靶子。<br>系统会记录你的过瞄/欠瞄趋势。</p>
+        <button class="btn btn-primary" onclick="startAimTest()">开始测试</button>
+      </div>
+    </div>
+
+    <!-- 实时统计 -->
+    <div class="aim-stats" id="aim-stats" style="display:none;">
+      <div class="aim-stat"><div class="num" id="stat-hit">0</div><div class="lbl">命中</div></div>
+      <div class="aim-stat"><div class="num" id="stat-miss">0</div><div class="lbl">未命中</div></div>
+      <div class="aim-stat"><div class="num" id="stat-acc">—</div><div class="lbl">命中率</div></div>
+      <div class="aim-stat"><div class="num" id="stat-time">—</div><div class="lbl">平均耗时</div></div>
+      <div class="aim-stat"><div class="num" id="stat-remaining">—</div><div class="lbl">剩余</div></div>
+    </div>
+
+    <!-- 测试结果 -->
+    <div class="aim-result" id="aim-result">
+      <!-- 推荐灵敏度（最醒目的部分） -->
+      <div id="recommend-box" style="text-align:center; padding:20px; background:var(--val-dark); border:2px solid var(--val-green); border-radius:var(--radius); margin-bottom:20px;">
+        <div style="font-size:13px; color:var(--val-dim); margin-bottom:4px;">🎯 推荐灵敏度</div>
+        <div id="recommend-sens" style="font-size:52px; font-weight:900; color:var(--val-green); line-height:1.1;">—</div>
+        <div id="recommend-edpi" style="font-size:14px; color:var(--val-dim); margin-top:4px;">—</div>
+        <div id="recommend-change" style="margin-top:10px; font-size:15px; font-weight:700;"></div>
+        <button class="btn btn-secondary btn-sm" style="margin-top:12px;" onclick="copyRecommend()">📋 复制推荐值</button>
+        <span id="copy-hint" style="font-size:12px; color:var(--val-green); margin-left:8px; opacity:0; transition:opacity .3s;"></span>
+      </div>
+
+      <h4>📊 测试结果分析</h4>
+      <div id="aim-analysis"></div>
+
+      <h4 style="margin-top:16px;">💡 详细说明</h4>
+      <div id="aim-suggestion"></div>
+
+      <h4 style="margin-top:16px;">📐 过瞄/欠瞄分析</h4>
+      <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--val-dim);">
+        <span>⬅ 严重欠瞄（灵敏度太低）</span>
+        <span>平衡</span>
+        <span>严重过瞄（灵敏度太高）➡</span>
+      </div>
+      <div class="overshoot-bar">
+        <div class="overshoot-marker" id="overshoot-marker" style="left:50%"></div>
+      </div>
+      <div id="overshoot-text" style="text-align:center; font-size:14px; margin-top:8px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 页面3: 跨游戏换算 ==================== -->
+<div class="page" id="page-convert">
+  <div class="card">
+    <h2>🔄 跨游戏灵敏度换算</h2>
+    <div class="tip">
+      <strong>原理：</strong>不同游戏的灵敏度缩放系数不同。这里通过 cm/360（鼠标移动多少厘米转360°）做中间换算，保证手感一致。
+    </div>
+    <div class="convert-input-row">
+      <div class="form-group">
+        <label>源游戏</label>
+        <select id="conv-from">
+          <option value="cs2">CS2 / CS:GO</option>
+          <option value="ow">守望先锋 (Overwatch)</option>
+          <option value="apex">Apex 英雄</option>
+          <option value="pubg">PUBG</option>
+          <option value="r6">彩虹六号：围攻</option>
+          <option value="fortnite">堡垒之夜</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>源游戏灵敏度</label>
+        <input type="number" id="conv-sens" placeholder="输入灵敏度" step="0.001" min="0.001">
+      </div>
+      <div class="form-group">
+        <label>鼠标 DPI</label>
+        <input type="number" id="conv-dpi" placeholder="例如 800" min="100" max="25600" value="800">
+      </div>
+      <div class="form-group" style="flex:0; min-width:auto;">
+        <button class="btn btn-primary" onclick="convertSens()">换算 →</button>
+      </div>
+    </div>
+
+    <div class="convert-result" id="convert-result">
+      <div style="text-align:center; font-size:14px; color:var(--val-dim); margin-bottom:4px;">无畏契约灵敏度</div>
+      <div class="big" id="convert-value">—</div>
+      <div class="note" id="convert-note"></div>
+      <div class="info-grid" id="convert-info"></div>
+    </div>
+  </div>
+
+  <!-- 换算公式说明 -->
+  <div class="card">
+    <h2>📐 换算原理</h2>
+    <table class="convert-table">
+      <thead>
+        <tr><th>游戏</th><th>yaw 系数</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="game-name">Valorant</td><td class="formula">0.07</td><td>基础系数，1灵敏度 = 0.07°/count</td></tr>
+        <tr><td class="game-name">CS2 / CS:GO</td><td class="formula">0.022</td><td>Source 引擎标准 yaw 值</td></tr>
+        <tr><td class="game-name">守望先锋</td><td class="formula">0.0066</td><td>暴雪引擎，系数极小</td></tr>
+        <tr><td class="game-name">Apex 英雄</td><td class="formula">0.022</td><td>Source 引擎魔改版，同 CS</td></tr>
+        <tr><td class="game-name">PUBG</td><td class="formula">0.02</td><td>虚幻4引擎，近似值</td></tr>
+        <tr><td class="game-name">彩虹六号</td><td class="formula">0.02</td><td>AnvilNext 引擎</td></tr>
+        <tr><td class="game-name">堡垒之夜</td><td class="formula">0.0055</td><td>UE4，系数极小</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:16px; font-size:13px; color:var(--val-dim); line-height:1.8;">
+      <strong style="color:var(--val-text);">换算公式：</strong><br>
+      cm/360 = 360 ÷ (DPI × 源灵敏度 × 源yaw) × 2.54<br>
+      瓦罗兰特灵敏度 = 360 ÷ (DPI × cm/360 ÷ 2.54 × 0.07)
+    </div>
+  </div>
+</div>
+
+<!-- ===== 页脚 ===== -->
+<div class="footer">
+  无畏契约灵敏度助手 · 数据仅供参考，最终手感以自己舒服为准 🎯
+</div>
+
+<script>
+// ==================== 页签切换 ====================
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('page-' + tab.dataset.page).classList.add('active');
+  });
+});
+
+// ==================== eDPI 计算器 ====================
+function calcEDPI() {
+  const dpi = parseFloat(document.getElementById('input-dpi').value);
+  const sens = parseFloat(document.getElementById('input-sens').value);
+  if (!dpi || !sens || dpi <= 0 || sens <= 0) {
+    alert('请输入有效的 DPI 和灵敏度');
+    return;
+  }
+
+  const edpi = dpi * sens;
+  const cm360 = (360 / (dpi * sens * 0.07)) * 2.54;
+
+  // 显示结果
+  const resultBox = document.getElementById('edpi-result');
+  resultBox.classList.add('show');
+  document.getElementById('edpi-number').textContent = Math.round(edpi);
+
+  // 定位 marker（将 eDPI 映射到 0~100% 的位置，范围 50~800）
+  const minE = 50, maxE = 800;
+  const pct = Math.min(100, Math.max(0, ((edpi - minE) / (maxE - minE)) * 100));
+  document.getElementById('edpi-marker').style.left = pct + '%';
+
+  // 评估
+  let verdictClass, verdictText;
+  if (edpi < 150) {
+    verdictClass = 'low';
+    verdictText = '🐌 极低灵敏度 — 大幅手臂流';
+  } else if (edpi < 200) {
+    verdictClass = 'low';
+    verdictText = '🎯 低灵敏度 — 精准优先型';
+  } else if (edpi <= 400) {
+    verdictClass = 'good';
+    verdictText = '✅ 合理区间 — 推荐范围';
+  } else if (edpi <= 600) {
+    verdictClass = 'mid';
+    verdictText = '⚠️ 偏高灵敏度 — 手腕流';
+  } else {
+    verdictClass = 'high';
+    verdictText = '🚀 极高灵敏度 — 需要精准控制';
+  }
+  const verdictEl = document.getElementById('edpi-verdict');
+  verdictEl.className = 'verdict ' + verdictClass;
+  verdictEl.textContent = verdictText;
+
+  // 详细信息
+  const infoGrid = document.getElementById('edpi-info');
+  infoGrid.innerHTML = `
+    <div class="info-item"><div class="value">${dpi}</div><div class="label">鼠标 DPI</div></div>
+    <div class="info-item"><div class="value">${sens}</div><div class="label">游戏内灵敏度</div></div>
+    <div class="info-item"><div class="value">${Math.round(edpi)}</div><div class="label">eDPI</div></div>
+    <div class="info-item"><div class="value">${cm360.toFixed(1)} cm</div><div class="label">cm/360°</div></div>
+  `;
+
+  // 建议
+  const suggestions = [];
+  if (edpi < 150) {
+    suggestions.push({ key: '鼠标垫', text: '需要至少 40cm 宽的大鼠标垫，推荐 XL 尺寸（如 45×40cm）' });
+    suggestions.push({ key: '姿势', text: '主要用手臂带动鼠标，手腕只做微调' });
+    suggestions.push({ key: '优势', text: '远距离精准度极高，爆头线容易控制' });
+    suggestions.push({ key: '劣势', text: '近距离遭遇战转身慢，需要提前预瞄' });
+    if (cm360 > 60) suggestions.push({ key: '提醒', text: `cm/360 达到 ${cm360.toFixed(1)}cm，可能需要多次抬鼠才能转身` });
+  } else if (edpi < 200) {
+    suggestions.push({ key: '风格', text: '这是职业选手最常见的区间，精准度很高' });
+    suggestions.push({ key: '鼠标垫', text: '建议 35cm 以上的中大号鼠标垫' });
+    suggestions.push({ key: '练习', text: '重点练习甩枪(flick)和预瞄' });
+  } else if (edpi <= 400) {
+    suggestions.push({ key: '状态', text: '✅ 处于推荐区间，手臂手腕混合型' });
+    suggestions.push({ key: '优势', text: '兼顾精准度和反应速度，最平衡的区间' });
+    suggestions.push({ key: '建议', text: '可以在此基础上微调 ±10% 找到最舒服的点' });
+  } else if (edpi <= 600) {
+    suggestions.push({ key: '风格', text: '手腕流为主，小幅度移动就能完成转身' });
+    suggestions.push({ key: '优势', text: '近距离反应快，适合突击位' });
+    suggestions.push({ key: '劣势', text: '远距离微调困难，容易过瞄' });
+    suggestions.push({ key: '建议', text: '如果经常过瞄（准星超过目标），可以尝试降低 10~20%' });
+  } else {
+    suggestions.push({ key: '⚠️ 注意', text: 'eDPI 超过 600 在瓦罗兰特中非常高，很难精准控制' });
+    suggestions.push({ key: '建议', text: '强烈建议逐步降低到 400 以下，每次降 10~15% 适应几天' });
+    suggestions.push({ key: '原因', text: '瓦罗兰特是战术射击游戏，爆头精度比转身速度更重要' });
+  }
+  const sugList = document.getElementById('edpi-suggestions');
+  sugList.innerHTML = suggestions.map(s => `<li><span class="key">${s.key}：</span>${s.text}</li>`).join('');
+}
+
+// ==================== 瞄准测试 ====================
+let aimState = {
+  total: 0, hit: 0, miss: 0, startTime: 0, times: [],
+  overshoots: [],  // 正值=过瞄，负值=欠瞄
+  running: false
+};
+
+function startAimTest() {
+  const dpi = parseFloat(document.getElementById('aim-dpi').value);
+  const sens = parseFloat(document.getElementById('aim-sens').value);
+  if (!dpi || !sens || dpi <= 0 || sens <= 0) {
+    alert('请先输入 DPI 和当前灵敏度');
+    return;
+  }
+
+  aimState.total = parseInt(document.getElementById('aim-count').value);
+  aimState.hit = 0;
+  aimState.miss = 0;
+  aimState.times = [];
+  aimState.overshoots = [];
+  aimState.running = true;
+  aimState.startTime = performance.now();
+
+  document.getElementById('aim-overlay').style.display = 'none';
+  document.getElementById('aim-stats').style.display = 'flex';
+  document.getElementById('aim-result').classList.remove('show');
+
+  updateAimStats();
+  spawnTarget();
+}
+
+function spawnTarget() {
+  const area = document.getElementById('aim-area');
+  // 清除旧靶子
+  const old = area.querySelector('.aim-target');
+  if (old) old.remove();
+
+  if (aimState.hit >= aimState.total) {
+    endAimTest();
+    return;
+  }
+
+  const rect = area.getBoundingClientRect();
+  const size = 14;
+  const padding = 12;
+  const x = padding + Math.random() * (rect.width - size - padding * 2);
+  const y = padding + Math.random() * (rect.height - size - padding * 2);
+
+  const target = document.createElement('div');
+  target.className = 'aim-target';
+  target.style.left = x + 'px';
+  target.style.top = y + 'px';
+  target.dataset.spawnTime = performance.now();
+
+  target.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!aimState.running) return;
+
+    const elapsed = performance.now() - parseFloat(target.dataset.spawnTime);
+    aimState.times.push(elapsed);
+    aimState.hit++;
+
+    // 记录过瞄/欠瞄：从上一个靶子位置到这次的偏移
+    // 简化：记录鼠标点击位置与靶子中心的偏差
+    const targetRect = target.getBoundingClientRect();
+    const cx = targetRect.left + targetRect.width / 2;
+    const cy = targetRect.top + targetRect.height / 2;
+    const dx = e.clientX - cx;  // 正=偏右（过瞄），负=偏左（欠瞄）
+    const dy = e.clientY - cy;
+    aimState.overshoots.push({ dx, dy, dist: Math.sqrt(dx*dx + dy*dy) });
+
+    target.classList.add('hit');
+    setTimeout(() => { target.remove(); spawnTarget(); }, 100);
+    updateAimStats();
+  });
+
+  area.appendChild(target);
+}
+
+// 点击空白区域算 miss
+document.getElementById('aim-area').addEventListener('click', (e) => {
+  if (!aimState.running) return;
+  if (e.target.classList.contains('aim-target')) return;
+  aimState.miss++;
+  updateAimStats();
+});
+
+function updateAimStats() {
+  document.getElementById('stat-hit').textContent = aimState.hit;
+  document.getElementById('stat-miss').textContent = aimState.miss;
+  const total = aimState.hit + aimState.miss;
+  const acc = total > 0 ? Math.round((aimState.hit / total) * 100) + '%' : '—';
+  document.getElementById('stat-acc').textContent = acc;
+  const avgTime = aimState.times.length > 0
+    ? Math.round(aimState.times.reduce((a,b)=>a+b,0) / aimState.times.length) + 'ms'
+    : '—';
+  document.getElementById('stat-time').textContent = avgTime;
+  document.getElementById('stat-remaining').textContent = aimState.total - aimState.hit;
+}
+
+function endAimTest() {
+  aimState.running = false;
+  const area = document.getElementById('aim-area');
+  const old = area.querySelector('.aim-target');
+  if (old) old.remove();
+
+  // 显示覆盖层
+  const overlay = document.getElementById('aim-overlay');
+  overlay.style.display = 'flex';
+  overlay.querySelector('h3').textContent = '✅ 测试完成！';
+  overlay.querySelector('p').textContent = '查看下方分析结果';
+  overlay.querySelector('.btn').textContent = '再测一次';
+
+  // 分析结果
+  const dpi = parseFloat(document.getElementById('aim-dpi').value);
+  const sens = parseFloat(document.getElementById('aim-sens').value);
+  const edpi = dpi * sens;
+  const total = aimState.hit + aimState.miss;
+  const acc = total > 0 ? (aimState.hit / total) * 100 : 0;
+  const avgTime = aimState.times.length > 0
+    ? aimState.times.reduce((a,b)=>a+b,0) / aimState.times.length : 0;
+
+  // 过瞄/欠瞄分析
+  let avgDx = 0, avgDy = 0, avgDist = 0;
+  if (aimState.overshoots.length > 0) {
+    avgDx = aimState.overshoots.reduce((a,b)=>a+b.dx,0) / aimState.overshoots.length;
+    avgDy = aimState.overshoots.reduce((a,b)=>a+b.dy,0) / aimState.overshoots.length;
+    avgDist = aimState.overshoots.reduce((a,b)=>a+b.dist,0) / aimState.overshoots.length;
+  }
+  // 标准化到 -100 ~ 100
+  const overshootScore = Math.max(-100, Math.min(100, avgDx * 5));
+
+  // ==================== 核心：计算推荐灵敏度 ====================
+  // 推荐逻辑：
+  // 1. 有过瞄/欠瞄倾向 → 按偏差幅度按比例调整（偏差越大调整越多）
+  // 2. 没有明显倾向但命中率低 → 向职业选手黄金区间（eDPI 300）靠拢
+  // 3. 各项都好 → 保持当前值
+  let recSens, recEDPI, recCM360, recReason, changeDir;
+
+  if (Math.abs(overshootScore) > 10) {
+    // 有过瞄/欠瞄倾向：按偏差幅度计算调整比例（10~40分 → 8%~30%）
+    const absScore = Math.abs(overshootScore);
+    const adjustPct = Math.min(0.30, 0.08 + (absScore - 10) * 0.007);  // 8% ~ 30%
+    if (overshootScore > 10) {
+      // 过瞄：灵敏度太高，需要降低
+      recSens = sens * (1 - adjustPct);
+      recReason = `检测到过瞄倾向（准星经常超过目标），需要降低灵敏度`;
+      changeDir = 'down';
+    } else {
+      // 欠瞄：灵敏度太低，需要提高
+      recSens = sens * (1 + adjustPct);
+      recReason = `检测到欠瞄倾向（准星够不到目标），需要提高灵敏度`;
+      changeDir = 'up';
+    }
+  } else if (acc < 75) {
+    // 没有明显倾向但命中率偏低：向黄金区间靠拢
+    const goldenEDPI = 300;  // 职业选手中位数
+    recEDPI = edpi + (goldenEDPI - edpi) * 0.5;  // 向黄金值移动一半距离
+    recSens = recEDPI / dpi;
+    changeDir = recSens > sens ? 'up' : 'down';
+    recReason = `过瞄/欠瞄不明显但命中率 ${acc.toFixed(0)}% 偏低，向职业选手黄金区间（eDPI ${goldenEDPI}）靠拢`;
+  } else {
+    // 表现良好：保持
+    recSens = sens;
+    recReason = `表现良好，当前灵敏度很适合你`;
+    changeDir = 'keep';
+  }
+
+  recEDPI = dpi * recSens;
+  recCM360 = (360 / (dpi * recSens * 0.07)) * 2.54;
+  const changePct = Math.abs((recSens - sens) / sens * 100);
+
+  // 显示推荐灵敏度（最醒目的部分）
+  document.getElementById('recommend-sens').textContent = recSens.toFixed(3);
+  document.getElementById('recommend-edpi').textContent = `对应 eDPI ${Math.round(recEDPI)} · cm/360 ${recCM360.toFixed(1)}cm`;
+
+  const changeEl = document.getElementById('recommend-change');
+  if (changeDir === 'keep') {
+    changeEl.innerHTML = `<span style="color:var(--val-green);">✅ 保持不变</span>`;
+    document.getElementById('recommend-box').style.borderColor = 'var(--val-green)';
+    document.getElementById('recommend-sens').style.color = 'var(--val-green)';
+  } else if (changeDir === 'down') {
+    changeEl.innerHTML = `<span style="color:var(--val-red);">⬇ 降低 ${changePct.toFixed(0)}%</span> <span style="color:var(--val-dim); font-weight:400;">（当前 ${sens} → 推荐 ${recSens.toFixed(3)}）</span>`;
+    document.getElementById('recommend-box').style.borderColor = 'var(--val-red)';
+    document.getElementById('recommend-sens').style.color = 'var(--val-red)';
+  } else {
+    changeEl.innerHTML = `<span style="color:var(--val-blue);">⬆ 提高 ${changePct.toFixed(0)}%</span> <span style="color:var(--val-dim); font-weight:400;">（当前 ${sens} → 推荐 ${recSens.toFixed(3)}）</span>`;
+    document.getElementById('recommend-box').style.borderColor = 'var(--val-blue)';
+    document.getElementById('recommend-sens').style.color = 'var(--val-blue)';
+  }
+
+  // 保存推荐值供复制
+  window._recommendSens = recSens.toFixed(3);
+
+  // 显示结果
+  const resultEl = document.getElementById('aim-result');
+  resultEl.classList.add('show');
+
+  const analysis = document.getElementById('aim-analysis');
+  let analysisHtml = `
+    <div class="info-grid">
+      <div class="info-item"><div class="value">${aimState.hit}/${total}</div><div class="label">命中/总点击</div></div>
+      <div class="info-item"><div class="value">${acc.toFixed(1)}%</div><div class="label">命中率</div></div>
+      <div class="info-item"><div class="value">${Math.round(avgTime)}ms</div><div class="label">平均反应时间</div></div>
+      <div class="info-item"><div class="value">${avgDist.toFixed(1)}px</div><div class="label">平均偏差距离</div></div>
+    </div>
+  `;
+  analysis.innerHTML = analysisHtml;
+
+  // 生成建议
+  const sugEl = document.getElementById('aim-suggestion');
+  let sugHtml = '<ul class="suggestion-list">';
+
+  if (acc >= 90 && avgTime < 600) {
+    sugHtml += `<li><span class="key">✅ 优秀</span>：命中率 ${acc.toFixed(1)}%，反应也很快。当前灵敏度（eDPI ${Math.round(edpi)}）很适合你！</li>`;
+  } else if (acc >= 75) {
+    sugHtml += `<li><span class="key">👍 不错</span>：命中率 ${acc.toFixed(1)}%，还有提升空间。</li>`;
+  } else {
+    sugHtml += `<li><span class="key">⚠️ 需改进</span>：命中率 ${acc.toFixed(1)}%，灵敏度可能不太合适。</li>`;
+  }
+
+  // 推荐灵敏度说明
+  if (changeDir === 'down') {
+    sugHtml += `<li><span class="key">📉 推荐降低</span>：${recReason}。将灵敏度从 <b>${sens}</b> 降至 <b style="color:var(--val-green);">${recSens.toFixed(3)}</b>（降低 ${changePct.toFixed(0)}%）</li>`;
+  } else if (changeDir === 'up') {
+    sugHtml += `<li><span class="key">📈 推荐提高</span>：${recReason}。将灵敏度从 <b>${sens}</b> 升至 <b style="color:var(--val-green);">${recSens.toFixed(3)}</b>（提高 ${changePct.toFixed(0)}%）</li>`;
+  } else {
+    sugHtml += `<li><span class="key">🎯 保持当前</span>：${recReason}。灵敏度 <b>${sens}</b>（eDPI ${Math.round(edpi)}）</li>`;
+  }
+
+  if (avgTime > 800) {
+    sugHtml += `<li><span class="key">⏱️ 反应偏慢</span>：平均 ${Math.round(avgTime)}ms。如果经常感觉来不及瞄准，可能是灵敏度太低导致移动距离过长</li>`;
+  }
+
+  sugHtml += '</ul>';
+  sugEl.innerHTML = sugHtml;
+
+  // 过瞄指示条
+  const markerPct = 50 + (overshootScore / 2);  // 映射到 0~100
+  document.getElementById('overshoot-marker').style.left = Math.max(0, Math.min(100, markerPct)) + '%';
+  const osText = document.getElementById('overshoot-text');
+  if (overshootScore > 15) {
+    osText.innerHTML = `<span style="color:var(--val-red); font-weight:700;">过瞄倾向 ${Math.abs(overshootScore).toFixed(0)}%</span> — 建议降低灵敏度`;
+  } else if (overshootScore < -15) {
+    osText.innerHTML = `<span style="color:var(--val-blue); font-weight:700;">欠瞄倾向 ${Math.abs(overshootScore).toFixed(0)}%</span> — 建议提高灵敏度`;
+  } else {
+    osText.innerHTML = `<span style="color:var(--val-green); font-weight:700;">✅ 基本平衡</span> — 偏差在正常范围内`;
+  }
+}
+
+// ==================== 跨游戏换算 ====================
+// 各游戏的 yaw 系数（每单位灵敏度对应的度数/count）
+const YAW_TABLE = {
+  valorant: 0.07,
+  cs2: 0.022,
+  ow: 0.0066,
+  apex: 0.022,
+  pubg: 0.02,
+  r6: 0.02,
+  fortnite: 0.0055
+};
+
+function convertSens() {
+  const fromGame = document.getElementById('conv-from').value;
+  const fromSens = parseFloat(document.getElementById('conv-sens').value);
+  const dpi = parseFloat(document.getElementById('conv-dpi').value);
+
+  if (!fromSens || !dpi || fromSens <= 0 || dpi <= 0) {
+    alert('请输入有效的灵敏度和 DPI');
+    return;
+  }
+
+  const fromYaw = YAW_TABLE[fromGame];
+  const toYaw = YAW_TABLE.valorant;
+
+  // 计算 cm/360
+  const cm360 = (360 / (dpi * fromSens * fromYaw)) * 2.54;
+
+  // 换算成瓦罗兰特灵敏度
+  const valSens = 360 / (dpi * (cm360 / 2.54) * toYaw);
+
+  // 计算瓦罗兰特 eDPI
+  const valEDPI = dpi * valSens;
+
+  // 显示结果
+  const resultEl = document.getElementById('convert-result');
+  resultEl.classList.add('show');
+  document.getElementById('convert-value').textContent = valSens.toFixed(3);
+
+  const gameNames = {
+    cs2: 'CS2 / CS:GO', ow: '守望先锋', apex: 'Apex 英雄',
+    pubg: 'PUBG', r6: '彩虹六号', fortnite: '堡垒之夜'
+  };
+  document.getElementById('convert-note').textContent =
+    `从 ${gameNames[fromGame]} 灵敏度 ${fromSens} 换算（DPI ${dpi}）`;
+
+  document.getElementById('convert-info').innerHTML = `
+    <div class="info-item"><div class="value">${cm360.toFixed(1)} cm</div><div class="label">cm/360°</div></div>
+    <div class="info-item"><div class="value">${valSens.toFixed(3)}</div><div class="label">瓦罗兰特灵敏度</div></div>
+    <div class="info-item"><div class="value">${Math.round(valEDPI)}</div><div class="label">瓦罗兰特 eDPI</div></div>
+    <div class="info-item"><div class="value">${dpi}</div><div class="label">DPI</div></div>
+  `;
+}
+
+// ==================== 复制推荐灵敏度 ====================
+function copyRecommend() {
+  const val = window._recommendSens;
+  if (!val) return;
+  navigator.clipboard.writeText(val).then(() => {
+    const hint = document.getElementById('copy-hint');
+    hint.textContent = '✅ 已复制!';
+    hint.style.opacity = '1';
+    setTimeout(() => { hint.style.opacity = '0'; }, 2000);
+  });
+}
+
+// ==================== 页面加载时自动计算 ====================
+window.addEventListener('load', () => {
+  calcEDPI();
+});
+</script>
+
+</body>
+</html>
