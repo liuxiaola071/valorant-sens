@@ -78,7 +78,7 @@ body {
 .tab .icon { margin-right: 6px; }
 
 /* ===== 页面区域 ===== */
-.page { display: none; padding: 24px; max-width: 900px; margin: 0 auto; }
+.page { display: none; padding: 24px; max-width: 900px; margin: 0 auto; position: relative; }
 .page.active { display: block; }
 
 /* ===== 卡片 ===== */
@@ -281,7 +281,7 @@ body {
 .aim-area {
   position: relative;
   width: 100%;
-  height: 480px;
+  height: 540px;
   background: var(--val-dark);
   border: 2px solid var(--val-border);
   border-radius: var(--radius);
@@ -442,6 +442,57 @@ body {
 }
 .tip strong { color: var(--val-blue); }
 
+/* ===== 全屏模式 ===== */
+.fs-btn {
+  position: absolute;
+  top: 36px;
+  right: 36px;
+  z-index: 30;
+  padding: 7px 16px;
+  background: var(--val-dark);
+  border: 1px solid var(--val-border);
+  border-radius: var(--radius);
+  color: var(--val-dim);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all .2s;
+  letter-spacing: .5px;
+}
+.fs-btn:hover {
+  color: var(--val-text);
+  border-color: var(--val-red);
+  box-shadow: 0 0 12px rgba(255,70,85,.3);
+  transform: translateY(-1px);
+}
+.page.fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: block;
+  max-width: none;
+  overflow-y: auto;
+  background: var(--val-dark);
+  padding: 24px;
+  animation: fsIn .25s ease;
+}
+@keyframes fsIn {
+  from { opacity: 0; transform: scale(.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.page.fullscreen .card { max-width: 1100px; margin-left: auto; margin-right: auto; }
+.page.fullscreen .aim-area {
+  height: calc(100vh - 320px);
+  min-height: 360px;
+}
+.page.fullscreen .fs-btn {
+  position: fixed;
+  top: 16px;
+  right: 24px;
+  background: var(--val-card);
+}
+
 /* 响应式 */
 @media (max-width: 600px) {
   .page { padding: 12px; }
@@ -470,6 +521,7 @@ body {
 
 <!-- ==================== 页面1: eDPI 计算器 ==================== -->
 <div class="page active" id="page-edpi">
+  <button class="fs-btn" title="全屏模式（Esc 退出）" onclick="togglePageFullscreen(this)">⛶ 全屏</button>
   <div class="card">
     <h2>🧮 eDPI 计算器</h2>
     <div class="tip">
@@ -539,6 +591,7 @@ body {
 
 <!-- ==================== 页面2: 瞄准测试 ==================== -->
 <div class="page" id="page-aim">
+  <button class="fs-btn" title="全屏模式（Esc 退出）" onclick="togglePageFullscreen(this)">⛶ 全屏</button>
   <div class="card">
     <h2>🔫 瞄准测试</h2>
     <div class="tip">
@@ -616,6 +669,7 @@ body {
 
 <!-- ==================== 页面3: 跨游戏换算 ==================== -->
 <div class="page" id="page-convert">
+  <button class="fs-btn" title="全屏模式（Esc 退出）" onclick="togglePageFullscreen(this)">⛶ 全屏</button>
   <div class="card">
     <h2>🔄 跨游戏灵敏度换算</h2>
     <div class="tip">
@@ -693,6 +747,28 @@ document.querySelectorAll('.tab').forEach(tab => {
     tab.classList.add('active');
     document.getElementById('page-' + tab.dataset.page).classList.add('active');
   });
+});
+
+// ==================== 全屏模式 ====================
+function togglePageFullscreen(btn) {
+  const page = btn.closest('.page');
+  const isFs = page.classList.toggle('fullscreen');
+  document.body.style.overflow = isFs ? 'hidden' : '';
+  btn.innerHTML = isFs
+    ? '✕ 退出全屏 <span style="opacity:.55;font-weight:400;font-size:12px;">Esc</span>'
+    : '⛶ 全屏';
+}
+
+// 按 Esc 退出全屏
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const fsPage = document.querySelector('.page.fullscreen');
+  if (fsPage) {
+    fsPage.classList.remove('fullscreen');
+    document.body.style.overflow = '';
+    const btn = fsPage.querySelector('.fs-btn');
+    if (btn) btn.innerHTML = '⛶ 全屏';
+  }
 });
 
 // ==================== eDPI 计算器 ====================
