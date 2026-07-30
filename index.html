@@ -493,6 +493,125 @@ body {
   background: var(--val-card);
 }
 
+/* ===== 瞄准测试 · 沉浸式全屏 ===== */
+.aim-exit {
+  position: fixed;
+  top: 16px;
+  right: 24px;
+  z-index: 10001;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: rgba(26,39,51,.85);
+  border: 1px solid var(--val-border);
+  border-radius: var(--radius);
+  color: var(--val-dim);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  letter-spacing: .5px;
+  transition: all .2s;
+}
+.aim-exit:hover {
+  color: #fff;
+  border-color: var(--val-red);
+  box-shadow: 0 0 14px rgba(255,70,85,.4);
+  transform: translateY(-1px);
+}
+.aim-exit .key {
+  font-size: 11px;
+  color: var(--val-dim);
+  border: 1px solid var(--val-border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  background: rgba(15,25,35,.6);
+}
+#page-aim.aim-immersive {
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+#page-aim.aim-immersive .aim-exit { display: inline-flex; }
+#page-aim.aim-immersive .fs-btn { display: none; }
+#page-aim.aim-immersive .card {
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+#page-aim.aim-immersive .card > h2,
+#page-aim.aim-immersive .card > .tip { display: none; }
+#page-aim.aim-immersive .form-row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 200px 12px 24px;
+  background: linear-gradient(rgba(15,25,35,.95), rgba(15,25,35,.7) 75%, transparent);
+}
+#page-aim.aim-immersive .form-group { margin-bottom: 0; }
+#page-aim.aim-immersive .form-group label {
+  font-size: 10px;
+  letter-spacing: 1px;
+  opacity: .7;
+}
+#page-aim.aim-immersive .aim-area {
+  height: 100vh !important;
+  min-height: 100vh !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background:
+    radial-gradient(1100px 500px at 50% -8%, rgba(255,70,85,.07), transparent 65%),
+    var(--val-dark) !important;
+}
+#page-aim.aim-immersive .aim-overlay {
+  justify-content: flex-start;
+  padding-top: 13vh;
+  background: rgba(10,17,24,.82);
+  backdrop-filter: blur(4px);
+}
+#page-aim.aim-immersive .aim-stats {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  justify-content: center;
+  gap: 44px;
+  margin: 0;
+  padding: 12px 0 16px;
+  background: linear-gradient(transparent, rgba(15,25,35,.95) 45%);
+}
+#page-aim.aim-immersive .aim-stat .num {
+  font-size: 28px;
+  text-shadow: 0 0 16px rgba(255,70,85,.35);
+}
+#page-aim.aim-immersive .aim-stat .lbl {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+}
+#page-aim.aim-immersive .aim-result {
+  position: absolute;
+  z-index: 30;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  width: min(680px, calc(100vw - 32px));
+  max-height: 62vh;
+  overflow-y: auto;
+  margin: 0;
+  background: rgba(26,39,51,.96);
+  border: 1px solid var(--val-border);
+  box-shadow: 0 -10px 48px rgba(0,0,0,.55), 0 0 0 1px rgba(255,70,85,.12);
+  backdrop-filter: blur(6px);
+}
+
 /* 响应式 */
 @media (max-width: 600px) {
   .page { padding: 12px; }
@@ -591,7 +710,8 @@ body {
 
 <!-- ==================== 页面2: 瞄准测试 ==================== -->
 <div class="page" id="page-aim">
-  <button class="fs-btn" title="全屏模式（Esc 退出）" onclick="togglePageFullscreen(this)">⛶ 全屏</button>
+  <button class="fs-btn" title="进入沉浸式全屏" onclick="enterAimFullscreen()">⛶ 全屏</button>
+  <div class="aim-exit" id="aim-exit" onclick="exitAimFullscreen()">✕ 退出全屏 <span class="key">Esc</span></div>
   <div class="card">
     <h2>🔫 瞄准测试</h2>
     <div class="tip">
@@ -762,6 +882,11 @@ function togglePageFullscreen(btn) {
 // 按 Esc 退出全屏
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
+  // 瞄准测试的沉浸式全屏优先处理
+  if (document.getElementById('page-aim').classList.contains('aim-immersive')) {
+    exitAimFullscreen();
+    return;
+  }
   const fsPage = document.querySelector('.page.fullscreen');
   if (fsPage) {
     fsPage.classList.remove('fullscreen');
@@ -770,6 +895,31 @@ document.addEventListener('keydown', (e) => {
     if (btn) btn.innerHTML = '⛶ 全屏';
   }
 });
+
+// ==================== 瞄准测试 · 沉浸式全屏 ====================
+const aimPage = document.getElementById('page-aim');
+
+// 点"瞄准测试"页签 → 自动进入沉浸式全屏（真·满屏，隐藏标题）
+document.querySelector('.tab[data-page="aim"]').addEventListener('click', () => {
+  enterAimFullscreen();
+});
+
+function enterAimFullscreen() {
+  aimPage.classList.add('aim-immersive');
+  document.body.style.overflow = 'hidden';
+  try {
+    const p = document.documentElement.requestFullscreen();
+    if (p && p.catch) p.catch(() => {});  // 被拒绝或不支持时静默降级为页面级全屏
+  } catch (e) { /* 页面级全屏依然生效 */ }
+}
+
+function exitAimFullscreen() {
+  aimPage.classList.remove('aim-immersive');
+  document.body.style.overflow = '';
+  if (document.fullscreenElement) {
+    document.exitFullscreen().catch(() => {});
+  }
+}
 
 // ==================== eDPI 计算器 ====================
 function calcEDPI() {
@@ -899,8 +1049,12 @@ function spawnTarget() {
   const rect = area.getBoundingClientRect();
   const size = 14;
   const padding = 12;
+  // 沉浸式全屏时避开顶部参数栏和底部计分板，保证靶子永远可点
+  const immersive = area.closest('.page').classList.contains('aim-immersive');
+  const padTop = immersive ? 100 : padding;
+  const padBottom = immersive ? 84 : padding;
   const x = padding + Math.random() * (rect.width - size - padding * 2);
-  const y = padding + Math.random() * (rect.height - size - padding * 2);
+  const y = padTop + Math.random() * (rect.height - size - padTop - padBottom);
 
   const target = document.createElement('div');
   target.className = 'aim-target';
