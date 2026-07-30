@@ -494,7 +494,10 @@ body {
   display: block;
   max-width: none;
   overflow-y: auto;
-  background: var(--val-dark);
+  background:
+    radial-gradient(1100px 540px at 88% -8%, rgba(14,165,233,.16), transparent 60%),
+    radial-gradient(900px 520px at -8% 32%, rgba(2,132,199,.10), transparent 55%),
+    linear-gradient(180deg, #F0F8FD 0%, #E3F0FA 100%);
   padding: 24px;
   animation: fsIn .25s ease;
 }
@@ -555,8 +558,15 @@ body {
   --val-dim: #9FC0D8;
   --val-card: #10395E;
   --val-border: rgba(148,197,233,.3);
+  /* 关键：钉死整个视口，解除 .page 的 900px 宽度限制，盖住顶栏/页签 */
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  max-width: none !important;
+  margin: 0 !important;
   padding: 0 !important;
   overflow: hidden !important;
+  background: var(--val-dark);
 }
 #page-aim.aim-immersive .aim-exit { display: inline-flex; }
 #page-aim.aim-immersive .fs-btn { display: none; }
