@@ -5,17 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>无畏契约灵敏度助手</title>
 <style>
-/* ===== 瓦罗兰特风格变量 ===== */
+/* ===== 浅蓝白主题变量 ===== */
 :root {
-  --val-red: #FF4655;
-  --val-dark: #0F1923;
-  --val-card: #1A2733;
-  --val-border: #2A3A47;
-  --val-text: #ECE8E1;
-  --val-dim: #8B9BAB;
-  --val-green: #00C853;
-  --val-yellow: #FFD600;
-  --val-blue: #00B0FF;
+  --val-red: #0284C7;      /* 主色：蓝 */
+  --val-dark: #0B2740;     /* 深海军蓝（打靶场/墨色） */
+  --val-card: #FFFFFF;     /* 白色卡片 */
+  --val-border: #D6E4F0;   /* 淡蓝灰边框 */
+  --val-text: #0F2A43;     /* 藏青文字 */
+  --val-dim: #5B7A94;      /* 灰蓝辅助色 */
+  --val-green: #059669;
+  --val-yellow: #D97706;
+  --val-blue: #0EA5E9;     /* 天蓝点缀 */
+  --val-danger: #DC2626;   /* 警示红（保留语义） */
   --radius: 4px;
   --font: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif;
 }
@@ -23,7 +24,11 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  background: var(--val-dark);
+  background:
+    radial-gradient(1100px 540px at 88% -8%, rgba(14,165,233,.16), transparent 60%),
+    radial-gradient(900px 520px at -8% 32%, rgba(2,132,199,.10), transparent 55%),
+    linear-gradient(180deg, #F0F8FD 0%, #E3F0FA 100%);
+  background-attachment: fixed;
   color: var(--val-text);
   font-family: var(--font);
   min-height: 100vh;
@@ -31,7 +36,8 @@ body {
 
 /* ===== 顶栏 ===== */
 .header {
-  background: var(--val-red);
+  background: linear-gradient(115deg, #0369A1 0%, #0284C7 48%, #0EA5E9 100%);
+  color: #fff;
   padding: 16px 24px;
   display: flex;
   align-items: center;
@@ -58,6 +64,7 @@ body {
   gap: 0;
   background: var(--val-card);
   border-bottom: 2px solid var(--val-border);
+  box-shadow: 0 2px 12px rgba(2,132,199,.08);
 }
 .tab {
   padding: 14px 28px;
@@ -88,6 +95,7 @@ body {
   border-radius: var(--radius);
   padding: 24px;
   margin-bottom: 20px;
+  box-shadow: 0 6px 24px rgba(2,132,199,.09);
 }
 .card h2 {
   font-size: 18px;
@@ -124,19 +132,20 @@ body {
 .form-group input, .form-group select {
   width: 100%;
   padding: 10px 14px;
-  background: var(--val-dark);
+  background: #fff;
   border: 1px solid var(--val-border);
   border-radius: var(--radius);
   color: var(--val-text);
   font-size: 16px;
   font-family: var(--font);
   outline: none;
-  transition: border-color .2s;
+  transition: border-color .2s, box-shadow .2s;
 }
 .form-group input:focus, .form-group select:focus {
   border-color: var(--val-red);
+  box-shadow: 0 0 0 3px rgba(14,165,233,.15);
 }
-.form-group input::placeholder { color: #4A5A67; }
+.form-group input::placeholder { color: #9FB6C9; }
 
 /* ===== 按钮 ===== */
 .btn {
@@ -155,24 +164,28 @@ body {
   color: #fff;
   clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
 }
-.btn-primary:hover { background: #E03A48; }
+.btn-primary:hover { background: #0369A1; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(2,132,199,.35); }
 .btn-secondary {
-  background: var(--val-border);
+  background: #E3EEF7;
   color: var(--val-text);
 }
-.btn-secondary:hover { background: #3A4A57; }
+.btn-secondary:hover { background: #D2E5F3; }
 .btn-sm { padding: 8px 20px; font-size: 13px; }
 
 /* ===== 结果展示 ===== */
 .result-box {
-  background: var(--val-dark);
+  background: #F4FAFE;
   border: 1px solid var(--val-border);
   border-radius: var(--radius);
   padding: 20px;
   margin-top: 16px;
   display: none;
 }
-.result-box.show { display: block; }
+.result-box.show { display: block; animation: fadeUp .35s ease; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
 .edpi-value {
   font-size: 48px;
@@ -180,6 +193,7 @@ body {
   text-align: center;
   margin: 12px 0;
   letter-spacing: 2px;
+  color: var(--val-red);
 }
 .edpi-label {
   text-align: center;
@@ -195,7 +209,7 @@ body {
     var(--val-blue) 0%, var(--val-blue) 15%,
     var(--val-green) 15%, var(--val-green) 45%,
     var(--val-yellow) 45%, var(--val-yellow) 70%,
-    var(--val-red) 70%, var(--val-red) 100%
+    var(--val-danger) 70%, var(--val-danger) 100%
   );
   border-radius: 4px;
   margin: 16px 0 8px;
@@ -228,10 +242,10 @@ body {
   font-size: 15px;
   margin-top: 12px;
 }
-.verdict.low  { background: rgba(0,176,255,.15); color: var(--val-blue); border: 1px solid var(--val-blue); }
-.verdict.good { background: rgba(0,200,83,.15); color: var(--val-green); border: 1px solid var(--val-green); }
-.verdict.mid  { background: rgba(255,214,0,.15); color: var(--val-yellow); border: 1px solid var(--val-yellow); }
-.verdict.high { background: rgba(255,70,85,.15); color: var(--val-red); border: 1px solid var(--val-red); }
+.verdict.low  { background: rgba(14,165,233,.12); color: var(--val-blue); border: 1px solid var(--val-blue); }
+.verdict.good { background: rgba(5,150,105,.12); color: var(--val-green); border: 1px solid var(--val-green); }
+.verdict.mid  { background: rgba(217,119,6,.12); color: var(--val-yellow); border: 1px solid var(--val-yellow); }
+.verdict.high { background: rgba(220,38,38,.10); color: var(--val-danger); border: 1px solid var(--val-danger); }
 
 /* 建议列表 */
 .suggestion-list {
@@ -260,11 +274,16 @@ body {
   margin-top: 16px;
 }
 .info-item {
-  background: var(--val-card);
+  background: #F0F7FC;
   border: 1px solid var(--val-border);
   border-radius: var(--radius);
   padding: 14px;
   text-align: center;
+  transition: transform .15s, box-shadow .15s;
+}
+.info-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(2,132,199,.14);
 }
 .info-item .value {
   font-size: 24px;
@@ -282,10 +301,12 @@ body {
   position: relative;
   width: 100%;
   height: 540px;
-  background: var(--val-dark);
+  background:
+    radial-gradient(700px 300px at 50% -10%, rgba(14,165,233,.14), transparent 65%),
+    var(--val-dark);
   border: 2px solid var(--val-border);
   border-radius: var(--radius);
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='4' fill='none' stroke='%23FF4655' stroke-width='1.5'/%3E%3Ccircle cx='12' cy='12' r='1.2' fill='%23FF4655'/%3E%3C/svg%3E") 12 12, none;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='4' fill='none' stroke='%230EA5E9' stroke-width='1.5'/%3E%3Ccircle cx='12' cy='12' r='1.2' fill='%230EA5E9'/%3E%3C/svg%3E") 12 12, none;
   overflow: hidden;
   user-select: none;
 }
@@ -294,10 +315,10 @@ body {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: radial-gradient(circle, #fff 0%, var(--val-red) 50%, rgba(255,70,85,.3) 100%);
+  background: radial-gradient(circle, #fff 0%, #38BDF8 48%, rgba(14,165,233,.25) 100%);
   border: none;
-  box-shadow: 0 0 10px rgba(255,70,85,.6), 0 0 20px rgba(255,70,85,.3);
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='4' fill='none' stroke='%23FF4655' stroke-width='1.5'/%3E%3Ccircle cx='12' cy='12' r='1.2' fill='%23FF4655'/%3E%3C/svg%3E") 12 12, none;
+  box-shadow: 0 0 10px rgba(56,189,248,.85), 0 0 22px rgba(14,165,233,.45);
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='4' fill='none' stroke='%230EA5E9' stroke-width='1.5'/%3E%3Ccircle cx='12' cy='12' r='1.2' fill='%230EA5E9'/%3E%3C/svg%3E") 12 12, none;
   transition: transform .1s;
 }
 .aim-target:hover { transform: scale(1.3); }
@@ -305,7 +326,7 @@ body {
   transform: scale(0);
   transition: transform .15s;
   background: var(--val-green);
-  box-shadow: 0 0 12px rgba(85,255,155,.8);
+  box-shadow: 0 0 12px rgba(52,211,153,.9);
 }
 
 .aim-overlay {
@@ -318,8 +339,8 @@ body {
   background: rgba(15,25,35,.9);
   z-index: 10;
 }
-.aim-overlay h3 { font-size: 20px; margin-bottom: 12px; color: var(--val-text); }
-.aim-overlay p { color: var(--val-dim); margin-bottom: 20px; text-align: center; max-width: 400px; }
+.aim-overlay h3 { font-size: 20px; margin-bottom: 12px; color: #EAF4FC; }
+.aim-overlay p { color: #A9C6DC; margin-bottom: 20px; text-align: center; max-width: 400px; }
 
 .aim-stats {
   display: flex;
@@ -352,7 +373,7 @@ body {
 /* 过瞄/欠瞄指示 */
 .overshoot-bar {
   height: 6px;
-  background: linear-gradient(to right, var(--val-blue), var(--val-green), var(--val-red));
+  background: linear-gradient(to right, var(--val-blue), var(--val-green), var(--val-danger));
   border-radius: 3px;
   margin: 8px 0;
   position: relative;
@@ -403,12 +424,12 @@ body {
 .convert-result {
   margin-top: 20px;
   padding: 20px;
-  background: var(--val-dark);
-  border: 1px solid var(--val-green);
+  background: #F0F9FF;
+  border: 1px solid #7DD3FC;
   border-radius: var(--radius);
   display: none;
 }
-.convert-result.show { display: block; }
+.convert-result.show { display: block; animation: fadeUp .35s ease; }
 .convert-result .big {
   font-size: 36px;
   font-weight: 800;
@@ -463,7 +484,7 @@ body {
 .fs-btn:hover {
   color: var(--val-text);
   border-color: var(--val-red);
-  box-shadow: 0 0 12px rgba(255,70,85,.3);
+  box-shadow: 0 0 12px rgba(2,132,199,.28);
   transform: translateY(-1px);
 }
 .page.fullscreen {
@@ -517,7 +538,7 @@ body {
 .aim-exit:hover {
   color: #fff;
   border-color: var(--val-red);
-  box-shadow: 0 0 14px rgba(255,70,85,.4);
+  box-shadow: 0 0 14px rgba(2,132,199,.4);
   transform: translateY(-1px);
 }
 .aim-exit .key {
@@ -529,6 +550,11 @@ body {
   background: rgba(15,25,35,.6);
 }
 #page-aim.aim-immersive {
+  /* 沉浸区内将调色板切回深色，保证可读性 */
+  --val-text: #E6F2FB;
+  --val-dim: #9FC0D8;
+  --val-card: #10395E;
+  --val-border: rgba(148,197,233,.3);
   padding: 0 !important;
   overflow: hidden !important;
 }
@@ -567,7 +593,9 @@ body {
   border: none !important;
   border-radius: 0 !important;
   background:
-    radial-gradient(1100px 500px at 50% -8%, rgba(255,70,85,.07), transparent 65%),
+    radial-gradient(1200px 600px at 50% -10%, rgba(14,165,233,.20), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(125,211,252,.055) 0 1px, transparent 1px 56px),
+    repeating-linear-gradient(90deg, rgba(125,211,252,.055) 0 1px, transparent 1px 56px),
     var(--val-dark) !important;
 }
 #page-aim.aim-immersive .aim-overlay {
@@ -590,8 +618,13 @@ body {
 }
 #page-aim.aim-immersive .aim-stat .num {
   font-size: 28px;
-  text-shadow: 0 0 16px rgba(255,70,85,.35);
+  color: #38BDF8;
+  text-shadow: 0 0 16px rgba(56,189,248,.45);
 }
+#page-aim.aim-immersive .aim-result h4 { color: #7DD3FC; }
+#page-aim.aim-immersive .info-item .value { color: #7DD3FC; }
+#page-aim.aim-immersive #recommend-edpi { color: #9CC3DE; }
+#page-aim.aim-immersive .suggestion-list li { border-bottom-color: rgba(148,197,233,.18); }
 #page-aim.aim-immersive .aim-stat .lbl {
   font-size: 10px;
   letter-spacing: 1.5px;
@@ -608,7 +641,7 @@ body {
   margin: 0;
   background: rgba(26,39,51,.96);
   border: 1px solid var(--val-border);
-  box-shadow: 0 -10px 48px rgba(0,0,0,.55), 0 0 0 1px rgba(255,70,85,.12);
+  box-shadow: 0 -10px 48px rgba(0,0,0,.55), 0 0 0 1px rgba(14,165,233,.15);
   backdrop-filter: blur(6px);
 }
 
@@ -741,7 +774,7 @@ body {
     <div class="aim-area" id="aim-area">
       <div class="aim-overlay" id="aim-overlay">
         <h3>🎯 准备好了吗？</h3>
-        <p>点击"开始"后，红色靶子会随机出现。<br>尽量又快又准地点击每个靶子。<br>系统会记录你的过瞄/欠瞄趋势。</p>
+        <p>点击"开始"后，蓝色靶子会随机出现。<br>尽量又快又准地点击每个靶子。<br>系统会记录你的过瞄/欠瞄趋势。</p>
         <button class="btn btn-primary" onclick="startAimTest()">开始测试</button>
       </div>
     </div>
@@ -1048,11 +1081,11 @@ function spawnTarget() {
 
   const rect = area.getBoundingClientRect();
   const size = 14;
-  const padding = 12;
+  const padding = 4;  // 几乎贴边，靶子铺满整个区域
   // 沉浸式全屏时避开顶部参数栏和底部计分板，保证靶子永远可点
   const immersive = area.closest('.page').classList.contains('aim-immersive');
-  const padTop = immersive ? 100 : padding;
-  const padBottom = immersive ? 84 : padding;
+  const padTop = immersive ? 92 : padding;
+  const padBottom = immersive ? 76 : padding;
   const x = padding + Math.random() * (rect.width - size - padding * 2);
   const y = padTop + Math.random() * (rect.height - size - padTop - padBottom);
 
@@ -1190,9 +1223,9 @@ function endAimTest() {
     document.getElementById('recommend-box').style.borderColor = 'var(--val-green)';
     document.getElementById('recommend-sens').style.color = 'var(--val-green)';
   } else if (changeDir === 'down') {
-    changeEl.innerHTML = `<span style="color:var(--val-red);">⬇ 降低 ${changePct.toFixed(0)}%</span> <span style="color:var(--val-dim); font-weight:400;">（当前 ${sens} → 推荐 ${recSens.toFixed(3)}）</span>`;
-    document.getElementById('recommend-box').style.borderColor = 'var(--val-red)';
-    document.getElementById('recommend-sens').style.color = 'var(--val-red)';
+    changeEl.innerHTML = `<span style="color:var(--val-danger);">⬇ 降低 ${changePct.toFixed(0)}%</span> <span style="color:var(--val-dim); font-weight:400;">（当前 ${sens} → 推荐 ${recSens.toFixed(3)}）</span>`;
+    document.getElementById('recommend-box').style.borderColor = 'var(--val-danger)';
+    document.getElementById('recommend-sens').style.color = 'var(--val-danger)';
   } else {
     changeEl.innerHTML = `<span style="color:var(--val-blue);">⬆ 提高 ${changePct.toFixed(0)}%</span> <span style="color:var(--val-dim); font-weight:400;">（当前 ${sens} → 推荐 ${recSens.toFixed(3)}）</span>`;
     document.getElementById('recommend-box').style.borderColor = 'var(--val-blue)';
@@ -1250,7 +1283,7 @@ function endAimTest() {
   document.getElementById('overshoot-marker').style.left = Math.max(0, Math.min(100, markerPct)) + '%';
   const osText = document.getElementById('overshoot-text');
   if (overshootScore > 15) {
-    osText.innerHTML = `<span style="color:var(--val-red); font-weight:700;">过瞄倾向 ${Math.abs(overshootScore).toFixed(0)}%</span> — 建议降低灵敏度`;
+    osText.innerHTML = `<span style="color:var(--val-danger); font-weight:700;">过瞄倾向 ${Math.abs(overshootScore).toFixed(0)}%</span> — 建议降低灵敏度`;
   } else if (overshootScore < -15) {
     osText.innerHTML = `<span style="color:var(--val-blue); font-weight:700;">欠瞄倾向 ${Math.abs(overshootScore).toFixed(0)}%</span> — 建议提高灵敏度`;
   } else {
